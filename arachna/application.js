@@ -1,8 +1,55 @@
-// Required module (install via NPM)
 const Crawler = require("crawler");
-let count = 0;
+const { Kafka } = require("kafkajs");
 
-const c = new Crawler({
+// Kafka --------------------------------------------------------------------
+const kafka = new Kafka({
+  clientId: "arachna",
+  brokers: ["localhost:9092"],
+});
+
+// consumer
+const consumer = kafka.consumer({ groupId: "test-group" });
+const run = async () => {
+  await consumer.connect();
+  await consumer.subscribe({
+    topic: "page-crawl-enqueue",
+    fromBeginning: true,
+  });
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      // print message information
+      console.log({
+        topic,
+        partition,
+        offset: message.offset,
+        value: message.value.toString(),
+      });
+
+      // enqueue url if valid
+      if (validateUrl(message.value.toString())) {
+        crawler.queue(message.value.toString());
+      } else {
+        console.log("Invalid URL");
+      }
+    },
+  });
+};
+run().catch(console.error);
+
+// producer
+const producer = kafka.producer();
+const produceMessage = async (message) => {
+  console.log("produce message");
+  await producer.connect();
+  await producer.send({
+    topic: "page-crawl-complete",
+    messages: [{ value: "Hello KafkaJS user!" }],
+  });
+  await producer.disconnect();
+};
+
+// Crawler --------------------------------------------------------------------
+const crawler = new Crawler({
   rateLimit: 1000,
   maxConnections: 1,
 
@@ -10,19 +57,27 @@ const c = new Crawler({
     if (error) {
       console.log(error);
     } else {
-      console.log("-----")
       let $ = res.$; // get cheerio data, see cheerio docs for info
       console.log(res.body);
-      c.queue("https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html");
-      count += 1;
-      console.log(count);
+      produceMessage("this doesn't do anything yet");
     }
     done();
   },
 });
 
-c.on("drain", function () {
-  console.log("Done.");
+crawler.on("drain", function () {
+  console.log("No pages currently enqueued.");
 });
 
-c.queue("https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html");
+// Methods --------------------------------------------------------------------
+const validateUrl = (url) => {
+  const urlRegex =
+    /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
+  return urlRegex.test(url);
+};
+
+/*
+crawler.queue(
+  "https://people.scs.carleton.ca/~davidmckenney/fruitgraph/N-0.html"
+);
+*/
