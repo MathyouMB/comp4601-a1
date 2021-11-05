@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+  get '/crawls', to: 'crawls#index'
+  get '/crawls/:id/pages', to: 'crawls#pages'
+  post '/crawls', to: 'crawls#create'
+
+  get '/pages/:id', to: 'pages#get'
 end

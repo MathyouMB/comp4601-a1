@@ -17,17 +17,20 @@ const run = async () => {
   });
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
+      // format message
+      const formatted_message = JSON.parse(message.value.toString());
+
       // print message information
       console.log({
         topic,
         partition,
         offset: message.offset,
-        value: message.value.toString(),
+        value: formatted_message,
       });
 
       // enqueue url if valid
-      if (validateUrl(message.value.toString())) {
-        crawler.queue(message.value.toString());
+      if (validateUrl(formatted_message.url)) {
+        crawler.queue(formatted_message.url);
       } else {
         console.log("Invalid URL");
       }
@@ -39,27 +42,39 @@ run().catch(console.error);
 // producer
 const producer = kafka.producer();
 const produceMessage = async (message) => {
-  console.log("produce message");
   await producer.connect();
   await producer.send({
     topic: "page-crawl-complete",
-    messages: [{ value: "Hello KafkaJS user!" }],
+    messages: [{ value: message }],
   });
   await producer.disconnect();
 };
 
 // Crawler --------------------------------------------------------------------
 const crawler = new Crawler({
-  rateLimit: 1000,
-  maxConnections: 1,
+  rateLimit: 100,
+  maxConnections: 10,
 
   callback: function (error, res, done) {
     if (error) {
       console.log(error);
     } else {
-      let $ = res.$; // get cheerio data, see cheerio docs for info
-      console.log(res.body);
-      produceMessage("this doesn't do anything yet");
+      if (
+        !res.options.uri.endsWith(".pdf") ||
+        !res.options.uri.endsWith(".doc") ||
+        !res.options.uri.endsWith(".xlsx")
+      ) {
+        let $ = res.$;
+        let links = prepareLinks(res.options.uri, $("a").get());
+        let message = formatMessage(
+          $("title").text(),
+          res.options.uri,
+          $("body").text(),
+          links
+        );
+
+        produceMessage(message);
+      }
     }
     done();
   },
@@ -74,6 +89,66 @@ const validateUrl = (url) => {
   const urlRegex =
     /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
   return urlRegex.test(url);
+};
+
+const formatMessage = (title, url, html, links) => {
+  return JSON.stringify({
+    title: title,
+    url: url,
+    html: html,
+    links: links,
+  });
+};
+
+const prepareLinks = (origin, links) => {
+  let filteredLinks = filterLinks(links);
+  formattedLinks = formatLinks(origin, filteredLinks);
+  convertedLinks = convertExternalHashLinks(formattedLinks);
+  linkStrings = urlsToStrings(convertedLinks);
+  return linkStrings;
+};
+
+const formatLinks = (origin, links) => {
+  let formattedLinks = [];
+  links.forEach((e) => {
+    absolute_url = new URL(e.attribs.href, origin).href;
+    formattedLinks.push(absolute_url);
+  });
+  return formattedLinks;
+};
+
+const filterLinks = (links) => {
+  let filterLinks = [];
+  links.forEach((e) => {
+    if ("href" in e.attribs) {
+      if (!e.attribs.href.startsWith("#")) {
+        filterLinks.push(e);
+      }
+    }
+  });
+  return filterLinks;
+};
+
+const convertExternalHashLinks = (links) => {
+  let convertedLinks = [];
+  links.forEach((e) => {
+    const link = new URL(e);
+    if (link.hash.length > 0) {
+      let convertedLink = e.substring(0, link.length - link.hash.length);
+      convertedLinks.push(convertedLink);
+    } else {
+      convertedLinks.push(link);
+    }
+  });
+  return convertedLinks;
+};
+
+const urlsToStrings = (urls) => {
+  let urlsAsStrings = [];
+  urls.forEach((e) => {
+    urlsAsStrings.push(e.href);
+  });
+  return urlsAsStrings;
 };
 
 /*

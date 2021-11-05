@@ -10,13 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_31_232139) do
+ActiveRecord::Schema.define(version: 2021_11_05_011008) do
+
+  create_table "crawls", force: :cascade do |t|
+    t.string "url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "max_pages"
+  end
 
   create_table "edges", force: :cascade do |t|
     t.text "parent"
     t.text "child"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "crawl_id"
+    t.index ["crawl_id"], name: "index_edges_on_crawl_id"
   end
 
   create_table "pages", force: :cascade do |t|
@@ -24,6 +33,21 @@ ActiveRecord::Schema.define(version: 2021_10_31_232139) do
     t.text "html"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "crawl_id"
+    t.text "title"
+    t.float "page_rank"
+    t.index ["crawl_id"], name: "index_pages_on_crawl_id"
   end
 
+  create_table "queued_pages", force: :cascade do |t|
+    t.text "url"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "crawl_id"
+    t.index ["crawl_id"], name: "index_queued_pages_on_crawl_id"
+  end
+
+  add_foreign_key "edges", "crawls"
+  add_foreign_key "pages", "crawls"
+  add_foreign_key "queued_pages", "crawls"
 end

@@ -96,6 +96,9 @@ GEM
     parallel (1.21.0)
     parser (3.0.2.0)
       ast (~> 2.4.1)
+    pp (0.2.0)
+      prettyprint
+    prettyprint (0.1.1)
     puma (4.3.10)
       nio4r (~> 2.0)
     racc (1.6.0)
@@ -190,6 +193,7 @@ DEPENDENCIES
   byebug
   delivery_boy
   listen (~> 3.2)
+  pp (~> 0.2.0)
   puma (~> 4.1)
   racecar
   rails (~> 6.0.3, >= 6.0.3.7)

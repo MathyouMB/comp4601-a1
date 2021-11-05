@@ -151,3 +151,6 @@ Metrics/BlockLength:
 
 Rails/BulkChangeTable:
   Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
