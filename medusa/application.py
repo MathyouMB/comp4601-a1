@@ -23,10 +23,6 @@ def calculate_pagerank(edges):
     # Format edges
     formatted_edges = format_edges(edges)
 
-    f = open("demofile3.txt", "a")
-    f.write(json.dumps(formatted_edges))
-    f.close()
-
     # Feed page link to graph
     network_graph.add_weighted_edges_from(formatted_edges)
 
