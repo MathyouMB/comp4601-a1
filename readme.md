@@ -1,5 +1,5 @@
 # COMP 4601 - A1
-
+<img src="./documentation/architecture.png">
 # Setup
 
 1. Run Kafka docker-compose
