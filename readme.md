@@ -4,11 +4,11 @@ Hello, and welcome to my implementation of Assignment 1 for the Fall 2021 iterat
 
 <img src="./documentation/architecture.png">
 
+<hr>
+
 # Services
 
 As you can see, from the architecture diagram above, this project makes use of several different services instead of being one monolithic application. Each of the services in this application is named after a different boss from the video game [Realm of the Mad God](https://www.realmofthemadgod.com/).
-
-<hr>
 
 ## [Avatar](https://www.realmeye.com/wiki/avatar-of-the-forgotten-king) - Client
 
@@ -18,7 +18,6 @@ Avatar is the React frontend client.
 
 In Realm of the Mad God, the Avatar of the Forgotten King drops a portal to the "Shatters" dungeon. In this application, "Avatar" is a "portal" to this applications backend.
 
-<hr>
 
 ## [Sentinel](https://www.realmeye.com/wiki/the-bridge-sentinel) - Gateway Service
 
@@ -34,7 +33,6 @@ In Realm of the Mad God, the Bridge Sentinel is accessed by opening a bridge or 
 - GET `/personal?q=<query>&limit=<limit>&boost=<boost>`
 - GET `/pages/:id`
 
-<hr>
 
 ## [Septavius](https://www.realmeye.com/wiki/septavius-the-ghost-god) - Search Service
 
@@ -48,7 +46,11 @@ In Realm of the Mad God, Septavius lives in a dungeon that often requires you to
 
 - GET `/search/<crawl_id>?q=<query>&limit=<limit>&boost=<boost>`
 
-<hr>
+**Topics:**
+
+- subscribes_to `index_data_request_complete`
+- produces_to `index_data_request`
+
 
 ## [Oryx](https://www.realmeye.com/wiki/oryx-the-mad-god-3) - Data Service
 
@@ -63,7 +65,6 @@ In Realm of the Mad God, Oryx is the entity that oversees "the realm". "Realm" i
 - GET `/pages/<id>`
 - GET `/crawls/<crawl_id>/pages?ids=<ids_string>`
 
-<hr>
 
 ## [Thessal](https://www.realmeye.com/wiki/thessal-the-mermaid-goddess) - Orchestration Service
 
@@ -73,8 +74,15 @@ Thessal is the orchestration service.
 
 In Realm of the Mad God, Thessal is one of the only enemies that talks to the player (it consumes the player's messages). In this appliation, Thessal acts as the "Realm" app's core kafka consumer. It consumes just about every kafka event and orchestrates there procceeding follow up events.
 
+**Topics:**
 
-<hr>
+- subscribes_to `page-crawl-complete`
+- subscribes_to `index_data_request`
+- subscribes_to `index_data_request_pagerank_complete`
+- produces_to `page-crawl-enqueue`
+- produces_to `index_data_request_pagerank`
+- produces_to `index_data_request_complete`
+
 
 ## [Arachna](https://www.realmeye.com/wiki/son-of-arachna) - Crawling Service
 
@@ -84,8 +92,10 @@ Arachna is the crawling service.
 
 In Realm of the Mad God, Arachna is a spider themed boss. In this application, Arachna is responsible for crawling web pages and returning their results through kafka. Arachna is written in JavaScript and uses the Crawler library.
 
-<hr>
+**Topics:**
 
+- subscribes_to `page-crawl-enqueue`
+- produces_to `page-crawl-complete`
 ## [Medusa](https://www.realmeye.com/wiki/medusa) - Pank Rank Service
 
 <img src="https://i.imgur.com/M2HWCQX.png" width="120px">
@@ -93,6 +103,11 @@ In Realm of the Mad God, Arachna is a spider themed boss. In this application, A
 Medusa is the page rank service.
 
 This service is name Medusa because it is written in Python. Medusa is responsible for calculating the page rank of each page in a crawl. Medusa commnicates with the other services through kafka.
+
+**Topics:**
+
+- subscribes_to `index_data_request_pagerank`
+- produces_to `index_data_request_pagerank_complete`
 
 <hr>
 
