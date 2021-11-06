@@ -72,7 +72,7 @@ In Realm of the Mad God, Oryx is the entity that oversees "the realm". "Realm" i
 
 Thessal is the orchestration service.
 
-In Realm of the Mad God, Thessal is one of the only enemies that talks to the player (it consumes the player's messages). In this appliation, Thessal acts as the "Realm" app's core kafka consumer. It consumes just about every kafka event and orchestrates there procceeding follow up events.
+In Realm of the Mad God, Thessal is one of the only enemies that talks to the player (it consumes the player's messages). In this application, Thessal acts as the "Realm" app's core kafka consumer. It consumes just about every kafka event and orchestrates there proceeding follow up events.
 
 **Topics:**
 
@@ -102,7 +102,7 @@ In Realm of the Mad God, Arachna is a spider themed boss. In this application, A
 
 Medusa is the page rank service.
 
-This service is name Medusa because it is written in Python. Medusa is responsible for calculating the page rank of each page in a crawl. Medusa commnicates with the other services through kafka.
+This service is name Medusa because it is written in Python. Medusa is responsible for calculating the page rank of each page in a crawl. Medusa communicates with the other services through kafka.
 
 **Topics:**
 
