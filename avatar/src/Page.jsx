@@ -25,7 +25,9 @@ return (
       <>
       <h1>{data.title}</h1>
       <p>{data.url}</p>
+      <h3>body</h3>
       <p>{data.html}</p>
+      <h3>pagerank</h3>
       <p>{data.page_rank}</p>
       {(data.incoming !== undefined) &&
           <>
