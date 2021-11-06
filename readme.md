@@ -183,16 +183,6 @@ yarn install
 yarn start
 ```
 
-
-# Kafka Topics
-
-- page-crawl-enqueue
-- page-crawl-complete
-- index_data_request
-- index_data_request_pagerank
-- index_data_request_pagerank_complete
-- index_data_request_complete
-
 # Scripts
 
 Create message
